@@ -8,7 +8,7 @@ using DAL.Entities;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/tasks")]
     public class TasksController : ControllerBase
     {
         private readonly ITaskService _taskService;

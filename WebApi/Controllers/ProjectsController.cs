@@ -6,7 +6,7 @@ using BLL.Exceptions;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/projects")]
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
