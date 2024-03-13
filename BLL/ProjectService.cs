@@ -4,6 +4,7 @@ using DAL.Entities;
 using BLL.Exceptions;
 using System.Runtime.CompilerServices;
 using Task = System.Threading.Tasks.Task;
+using DataTask = DAL.Entities.Task;
 
 namespace BLL
 {
@@ -91,9 +92,20 @@ namespace BLL
             {
                 throw new ProjectNotFoundException($"Project not found with Id: {id}");
             }
+            // update all the parts of project
             projectExisting.Name = projectBody.Name;
             projectExisting.Description = projectBody.Description;
             projectExisting.Code = projectBody.Code;
+            projectExisting.Status = projectBody.Status;
+            // check if all tasks in project are done by default if not throw exception
+            if(projectBody.Status == DAL.Entities.ProjectStatus.Completed)
+            {
+                var task = projectExisting.Tasks.Find(t => t.Status != DAL.Entities.TaskStatus.Completed);
+                if (task != null)
+                {
+                    throw new ProjectTasksNotCompletedException($"Project cant be set to completed if all tasks are not completed");
+                }
+            }
             await _projectRepository.SaveChangesAsync();
         }
 

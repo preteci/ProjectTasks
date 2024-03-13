@@ -50,7 +50,7 @@ namespace BLL
             }
             existingTask.Name = taskBody.Name;
             existingTask.Description = taskBody.Description;
-
+            existingTask.Status = taskBody.Status;
             await _taskRepository.SaveChangesAsync();
         }
     }

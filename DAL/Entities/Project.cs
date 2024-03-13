@@ -12,5 +12,14 @@ namespace DAL.Entities
         [Required(AllowEmptyStrings = true)]
         public string Code { get; set; }
         public List<DataTask>? Tasks { get; set; }
+        [Required]
+        public ProjectStatus Status { get; set; }
+    }
+    public enum ProjectStatus
+    {
+        NotStarted,
+        InProgress,
+        Completed,
+        OnHold
     }
 }

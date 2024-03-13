@@ -80,6 +80,10 @@ namespace WebApi.Controllers
             {
                 return NotFound(ex.Message);
             }
+            catch(ProjectTasksNotCompletedException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost("{projectId}/tasks/{taskId}")]

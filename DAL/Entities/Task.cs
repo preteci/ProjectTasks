@@ -13,5 +13,16 @@ namespace DAL.Entities
         public int? ProjectId {get; set; }
         [JsonIgnore]
         public Project? Project { get; set; }
+        [Required]
+        public TaskStatus Status { get; set; }
     }
+
+    public enum TaskStatus
+    { 
+        NotStarted,
+        InProgress,
+        Completed,
+        OnHOld
+    }
+
 }
