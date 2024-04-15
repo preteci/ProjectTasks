@@ -33,9 +33,4 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: AzureRmWebAppDeployment@4
-  inputs:
-    ConnectionType: 'AzureRM'
-    appType: 'webApp'
-    WebAppName: 'InternshipApiService'
-    packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+- task: PublishBuildArtifacts@1
