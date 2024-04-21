@@ -141,12 +141,5 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("hello")]
-        public async Task<IActionResult> HelloFromMe()
-        {
-            return Ok("Test was okaaay!");
-        }
-
-
     } 
 }
