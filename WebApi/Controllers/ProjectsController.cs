@@ -10,10 +10,11 @@ namespace WebApi.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
-
-        public ProjectsController(IProjectService projectService)
+        private readonly IFileService _fileService;
+        public ProjectsController(IProjectService projectService, IFileService fileService)
         {
             _projectService = projectService;
+            _fileService = fileService; 
         }
 
         [HttpGet]
@@ -138,6 +139,61 @@ namespace WebApi.Controllers
             catch(ProjectNotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+        }
+
+        // FILES
+
+        [HttpPost("{id}/files/upload")]
+        public async Task<IActionResult> UploadFile(int id)
+        {
+            var httpRequest = HttpContext.Request;
+            if (!httpRequest.HasFormContentType)
+                return BadRequest("Please include a file into your request.");
+            try
+            {
+                var file = httpRequest.Form.Files[0];
+
+                using (var stream = file.OpenReadStream())
+                {
+                    await _fileService.UploadFileProjectAsync(id, stream, file.FileName);
+                }
+
+                return Ok("File upload complete!");
+            }
+            catch (ProjectNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("{id}/files/list")]
+        public async Task<IActionResult> GetListOfFilesAsync(int id)
+        {
+            try
+            {
+                return Ok(await _fileService.GetListOfFilesFromProjectAsync(id));
+            }
+            catch (ProjectNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("{id}/files/view/{fileName}")]
+        public async Task<IActionResult> DownloadFileAsync(int id, string fileName)
+        {
+            try
+            {
+                return File(await _fileService.DownloadFileFromProjectAsync(id, fileName), "image/webp");
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound("File not found");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 

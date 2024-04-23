@@ -4,6 +4,7 @@ using BLL.Exceptions;
 using Task = System.Threading.Tasks.Task;
 using DataTask = DAL.Entities.Task;
 using DAL.Entities;
+using System.Security.Cryptography.X509Certificates;
 
 namespace WebApi.Controllers
 {
@@ -12,10 +13,12 @@ namespace WebApi.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITaskService _taskService;
+        private readonly IFileService _fileService;
 
-        public TasksController(ITaskService taskService)
+        public TasksController(ITaskService taskService, IFileService fileService)
         {
             _taskService = taskService;
+            _fileService = fileService;
         }
 
         [HttpGet]
@@ -80,6 +83,62 @@ namespace WebApi.Controllers
             catch (TaskNotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+        }
+
+        [HttpPost("{id}/files/upload")]
+        public async Task<IActionResult> UploadFile(int id)
+        {
+            var httpRequest = HttpContext.Request;
+
+            if (!httpRequest.HasFormContentType)
+            {
+                return BadRequest("Please include a file into your request.");
+            }
+
+            try
+            {
+                var file = httpRequest.Form.Files[0];
+
+                using (var stream = file.OpenReadStream())
+                {
+                    await _fileService.UploadFileToTaskAsync(id, stream, file.FileName);
+                }
+                return Ok("File upload complete!");
+            }
+            catch (TaskNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("{id}/files/list")]
+        public async Task<IActionResult> GetListOfFilesAsync(int id)
+        {
+            try
+            {
+                return Ok(await _fileService.GetListOfFilesFromTaskAsync(id));
+            }
+            catch(TaskNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("{id}/files/view/{fileName}")]
+        public async Task<IActionResult> DownloadFileAsync(int id, string fileName)
+        {
+            try
+            {
+                return File(await _fileService.DownloadFileFromTaskAsync(id, fileName), "image/webp");
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound("File not found");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }
