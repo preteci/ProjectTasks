@@ -137,7 +137,7 @@ namespace BLL
         public async Task<Stream> DownloadFileFromProjectAsync(int projectId, string fileName)
         {
             if (await _projectRepository.GetByIdAsync(projectId) == null)
-                throw new ProjectNotFoundException("Project not found");
+                throw new ProjectNotFoundException(" Project not found");
 
             // making a client
             ShareFileClient fileClient =
