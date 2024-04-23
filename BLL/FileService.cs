@@ -47,24 +47,26 @@ namespace BLL
 
         public async Task<IEnumerable<string>> GetListOfFilesFromTaskAsync(int taskId)
         {
-            List<string> listOfFiles = new List<string>();
 
-            // check if task is aviable;
-            var task = await _taskRepository.GetByIdAsync(taskId);
-            if (task == null)
-            {
+            // check if task exist
+            if (await _taskRepository.GetByIdAsync(taskId) == null)
                 throw new TaskNotFoundException("Task not found");
-            }
 
-            // setup client
-            ShareClient shareClient = _serviceClient.GetShareClient("projecttasks");
-            ShareDirectoryClient directoryClient = shareClient.GetRootDirectoryClient().GetSubdirectoryClient("Task").GetSubdirectoryClient("" + taskId);
+            // establish client
+            ShareDirectoryClient directoryClient = 
+                _serviceClient.GetShareClient("projecttasks")
+                .GetRootDirectoryClient()
+                .GetSubdirectoryClient("Task")
+                .GetSubdirectoryClient("" + taskId);
+
+            var listOfFiles = new List<string>();
 
             // get back all list of files
             await foreach (var item in directoryClient.GetFilesAndDirectoriesAsync())
             {
                 listOfFiles.Add(item.Name);
             }
+
             return listOfFiles;
         }
 
@@ -113,7 +115,7 @@ namespace BLL
 
         public async Task<IEnumerable<string>> GetListOfFilesFromProjectAsync(int projectId)
         { 
-
+            // check if project exist
             if (await _projectRepository.GetByIdAsync(projectId) == null)
                 throw new ProjectNotFoundException("Project not found");
 
@@ -125,6 +127,7 @@ namespace BLL
                 .GetSubdirectoryClient("" + projectId);
 
             var listOfFiles = new List<string>();
+
             // get back all list of files
             await foreach (var item in directoryClient.GetFilesAndDirectoriesAsync())
             {

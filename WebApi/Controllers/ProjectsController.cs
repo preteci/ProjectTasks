@@ -27,16 +27,8 @@ namespace WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProject(int id)
         {
-            try
-            {
-                var project = await _projectService.GetProjectByIdAsync(id);
-                return Ok(project);
-            }
-            catch (ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            
+            var project = await _projectService.GetProjectByIdAsync(id);
+            return Ok(project);
         }
 
         [HttpPost]
@@ -54,15 +46,8 @@ namespace WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
-            try
-            {
-                await _projectService.DeleteProjectAsync(id);
-                return Ok($"Project with Id: {id} has been deleted");
-            }
-            catch (ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _projectService.DeleteProjectAsync(id);
+            return Ok($"Project with Id: {id} has been deleted");
         }
 
         [HttpPut("{id}")]
@@ -72,74 +57,29 @@ namespace WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
-            try
-            {
-                await _projectService.UpdateProjectAsync(id, project);
-                return Ok("Project has been updated");
-            }
-            catch(ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch(ProjectTasksNotCompletedException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _projectService.UpdateProjectAsync(id, project);
+            return Ok("Project has been updated");
         }
 
         [HttpPost("{projectId}/tasks/{taskId}")]
         public async Task<IActionResult> AddTaskToProject(int taskId, int projectId)
         {
-            try
-            {
-                await _projectService.AddTaskToProjectAsync(taskId, projectId);
-                return Ok($"Task with ID: {taskId} has been added to Project with ID: {projectId}");
-            }
-            catch(ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch(TaskNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _projectService.AddTaskToProjectAsync(taskId, projectId);
+            return Ok($"Task with ID: {taskId} has been added to Project with ID: {projectId}");
         }
 
         [HttpDelete("{projectId}/tasks/{taskId}")]
         public async Task<IActionResult> RemoveTaskFromProject(int projectId, int taskId)
         {
-            try
-            {
-                await _projectService.RemoveTaskFromProjectAsync(projectId, taskId);
-                return Ok($"Task {taskId} has been removed from Project {projectId}");
-            }
-            catch (ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (TaskNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (TaskNotFoundOnProjectException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _projectService.RemoveTaskFromProjectAsync(projectId, taskId);
+            return Ok($"Task {taskId} has been removed from Project {projectId}");
         }
-
 
         [HttpGet("{projectId}/tasks")]
         public async Task<IActionResult> GetAllTaskFromProject(int projectId)
         {
-            try
-            {
-                var project = await _projectService.GetProjectByIdAsync(projectId);
-                return Ok(project.Tasks);
-            }
-            catch(ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var project = await _projectService.GetProjectByIdAsync(projectId);
+            return Ok(project.Tasks);
         }
 
         // FILES
@@ -148,53 +88,29 @@ namespace WebApi.Controllers
         public async Task<IActionResult> UploadFile(int id)
         {
             var httpRequest = HttpContext.Request;
+
             if (!httpRequest.HasFormContentType)
                 return BadRequest("Please include a file into your request.");
-            try
-            {
-                var file = httpRequest.Form.Files[0];
 
-                using (var stream = file.OpenReadStream())
-                {
-                    await _fileService.UploadFileProjectAsync(id, stream, file.FileName);
-                }
+            var file = httpRequest.Form.Files[0];
 
-                return Ok("File upload complete!");
-            }
-            catch (ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            using (var stream = file.OpenReadStream())
+                await _fileService.UploadFileProjectAsync(id, stream, file.FileName);
+
+            return Ok("File upload complete!");
         }
 
         [HttpGet("{id}/files/list")]
         public async Task<IActionResult> GetListOfFilesAsync(int id)
         {
-            try
-            {
-                return Ok(await _fileService.GetListOfFilesFromProjectAsync(id));
-            }
-            catch (ProjectNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            return Ok(await _fileService.GetListOfFilesFromProjectAsync(id));
         }
 
         [HttpGet("{id}/files/view/{fileName}")]
         public async Task<IActionResult> DownloadFileAsync(int id, string fileName)
         {
-            try
-            {
-                return File(await _fileService.DownloadFileFromProjectAsync(id, fileName), "image/webp");
-            }
-            catch (FileNotFoundException)
-            {
-                return NotFound("File not found");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            return File(await _fileService.DownloadFileFromProjectAsync(id, fileName), "image/webp");
+            
         }
 
     } 

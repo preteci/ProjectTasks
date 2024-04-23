@@ -1,5 +1,6 @@
 ﻿using DAL.Data;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Middlewares;
 
 namespace WebApi.Extensions
 {
@@ -17,6 +18,11 @@ namespace WebApi.Extensions
             return services;
         }
 
+        // exception middlawre
+        public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<ExceptionMiddleware>();
+        }
 
     }
 }

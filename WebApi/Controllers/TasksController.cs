@@ -31,15 +31,9 @@ namespace WebApi.Controllers
         [HttpGet("{Id}")]
         public async Task<IActionResult> GetTaskById(int Id)
         {
-            try
-            {
-                var task = await _taskService.GetTaskByIdAsync(Id);
-                return Ok(task);
-            }
-            catch (TaskNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var task = await _taskService.GetTaskByIdAsync(Id);
+            return Ok(task);
+
         }
 
         [HttpPost]
@@ -57,15 +51,9 @@ namespace WebApi.Controllers
         [HttpDelete("{Id}")]
         public async Task<IActionResult> DeleteTask(int Id)
         {
-            try
-            {
-                await _taskService.DeleteTaskAsync(Id);
-                return Ok($"Task with Id: {Id} has been deleted");
-            }
-            catch (TaskNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _taskService.DeleteTaskAsync(Id);
+            return Ok($"Task with Id: {Id} has been deleted");
+            
         }
 
         [HttpPut("{id}")]
@@ -75,71 +63,37 @@ namespace WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
-            try
-            {
-                await _taskService.UpdateTaskAsync(id, Task);
-                return Ok("Task has been updated");
-            }
-            catch (TaskNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _taskService.UpdateTaskAsync(id, Task);
+            return Ok("Task has been updated");
         }
 
         [HttpPost("{id}/files/upload")]
         public async Task<IActionResult> UploadFile(int id)
         {
             var httpRequest = HttpContext.Request;
-
             if (!httpRequest.HasFormContentType)
-            {
                 return BadRequest("Please include a file into your request.");
+
+
+            var file = HttpContext.Request.Form.Files[0];
+            using (var stream = file.OpenReadStream())
+            {
+                await _fileService.UploadFileToTaskAsync(id, stream, file.FileName);
             }
 
-            try
-            {
-                var file = httpRequest.Form.Files[0];
-
-                using (var stream = file.OpenReadStream())
-                {
-                    await _fileService.UploadFileToTaskAsync(id, stream, file.FileName);
-                }
-                return Ok("File upload complete!");
-            }
-            catch (TaskNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            return Ok("File upload complete!");
         }
 
         [HttpGet("{id}/files/list")]
         public async Task<IActionResult> GetListOfFilesAsync(int id)
         {
-            try
-            {
-                return Ok(await _fileService.GetListOfFilesFromTaskAsync(id));
-            }
-            catch(TaskNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            return Ok(await _fileService.GetListOfFilesFromTaskAsync(id));
         }
 
         [HttpGet("{id}/files/view/{fileName}")]
         public async Task<IActionResult> DownloadFileAsync(int id, string fileName)
         {
-            try
-            {
-                return File(await _fileService.DownloadFileFromTaskAsync(id, fileName), "image/webp");
-            }
-            catch (FileNotFoundException)
-            {
-                return NotFound("File not found");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            return File(await _fileService.DownloadFileFromTaskAsync(id, fileName), "image/webp");
         }
     }
 }
